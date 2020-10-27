@@ -1,4 +1,4 @@
-# this scrip gets all contact information of presessors in Goodman School of Business in Brock University
+
 
 import requests
 from lxml import html
