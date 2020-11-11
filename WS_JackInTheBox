@@ -1,0 +1,21 @@
+#Scraping all Jack In The Box restaurants in North America
+
+import requests
+import pandas as pd
+import json
+
+headers = {
+    'Accept': 'application/json, text/plain, */*',
+    'Referer': 'https://www.jackinthebox.com/',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36',
+}
+first=0
+response = requests.get('https://jackinthebox-locations.s3.us-west-1.amazonaws.com/locations.json', headers=headers)
+data=response.json()['Locations']
+for line in data:
+    df=pd.DataFrame([line['Address']])
+    df.to_csv('jackInTheBox.csv',mode='a',index=0,header=(first==0))
+    first+=1
+
+
+print('----------done---------')
