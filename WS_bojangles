@@ -1,0 +1,54 @@
+#Scraping all bojangles restaurants in North America
+
+import requests
+import pandas as pd
+from lxml import html
+
+# stateurl="//li[@class='c-directory-list-content-item']/a[@class='c-directory-list-content-item-link']/@href"
+# res=requests.get("https://locations.bojangles.com/")
+# state=html.fromstring(res.content).xpath(stateurl)
+# listbackup=['wv/princeton/701-oakvale-road.html','dc/washington/50-massachusetts-ave.html', 'pa/reading/3215-n--5th-street.html', 'ms/horn-lake/965-goodman-road.html']
+
+def parseaddress(url):
+    res=requests.get('https://locations.bojangles.com/'+url)
+    Xaddress="//div[@class='Nap-content']/div[@class='Nap-section']/address[@id='address']//text()"
+    Xtel="//div[@class='c-phone-number c-phone-main-number']/span[@id='telephone']/text()"
+    address=html.fromstring(res.content).xpath(Xaddress)
+    tel=html.fromstring(res.content).xpath(Xtel)
+    result={}
+    result['address']=address
+    result['tel']=tel
+    df=pd.DataFrame([result])
+    df.to_csv('bojangles.csv',mode='a',index=0,header=False)
+    print(result)
+
+
+
+
+
+statelist=['al.html','fl.html','ga.html','ky.html','md.html','nc.html','sc.html','tn.html','va.html','wv/princeton/701-oakvale-road.html','dc/washington/50-massachusetts-ave.html','pa/reading/3215-n--5th-street.html','ms/horn-lake/965-goodman-road.html']
+
+
+for state in statelist:
+    if len(state.split('/'))==3:
+        parseaddress(state)
+    else:
+        Xcityurl="//li[@class='c-directory-list-content-item']/a[@class='c-directory-list-content-item-link']/@href"
+        res1=requests.get('https://locations.bojangles.com/'+state)
+        cities=html.fromstring(res1.content).xpath(Xcityurl)
+        for city in cities:
+            if len(city.split('/'))==3:
+                parseaddress(city)
+            else:
+                Xpages="//div[@class='TeaserLinks']/a[@class='TeaserLinks-button']/@href"
+                res2=requests.get('https://locations.bojangles.com/'+city)
+                pages=html.fromstring(res2.content).xpath(Xpages)
+                for page in pages:
+                    pagelink=page.split('..')[1]
+                    parseaddress(pagelink)
+
+
+
+
+
+print('----------done--------')
